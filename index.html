@@ -134,6 +134,38 @@ body[data-edge="1"] .drift{opacity:1}
   *{animation:none!important;transition:none!important}
   .drift{display:none}
 }
+
+/* ===== BƯỚC 2: VƯỜN HOA ===== */
+.scene{position:relative;height:400px;margin:0 -28px 10px;width:calc(100% + 56px);overflow:hidden}
+.garden{position:absolute;inset:0;z-index:1}
+.fl{position:absolute;bottom:0;left:var(--x);width:0;height:var(--h)}
+.stem{position:absolute;left:-1.5px;bottom:0;width:3px;height:0;border-radius:2px;background:linear-gradient(#4a9a5b,#2c6e3a)}
+.stem::before,.stem::after{content:"";position:absolute;width:16px;height:8px;background:#3E8E52}
+.stem::before{left:3px;bottom:28%;border-radius:0 100% 0 100%;transform:rotate(-25deg);transform-origin:left bottom}
+.stem::after{right:3px;bottom:48%;border-radius:100% 0 100% 0;transform:rotate(25deg);transform-origin:right bottom}
+.head{position:absolute;left:calc(var(--s) / -2);top:calc(var(--s) / -2);width:var(--s);height:auto;opacity:0;transform:scale(0) rotate(-80deg)}
+.head.soft{filter:saturate(.65) brightness(1.12)}
+
+.spot{position:absolute;z-index:3;left:50%;top:48px;width:180px;margin-left:-90px}
+.spot::before{content:"";position:absolute;left:50%;top:50%;width:300px;height:300px;margin:-150px 0 0 -150px;border-radius:50%;background:radial-gradient(circle closest-side,rgba(255,45,138,.45),rgba(255,45,138,0));opacity:0}
+.spot .bloom{position:absolute;left:50%;top:50%;width:360px;margin:-180px 0 0 -180px;opacity:0;filter:drop-shadow(0 10px 18px rgba(225,15,116,.3))}
+.spot .arch{position:relative;z-index:1;width:180px;margin:0;opacity:0;border-width:5px;box-shadow:0 0 0 6px rgba(255,255,255,.6),0 18px 44px rgba(225,15,116,.45)}
+
+/* chỉ chạy khi bước này hiện ra, nên mỗi lần quay lại đều trồng lại từ đầu */
+.step.active .stem{animation:gStem 1.1s cubic-bezier(.2,.8,.2,1) var(--d) both}
+.step.active .head{animation:gHead 1s cubic-bezier(.2,1.3,.4,1) calc(var(--d) + .9s) both}
+.step.active .spot .bloom{animation:gHead 1.3s cubic-bezier(.2,1.2,.4,1) 2.1s both}
+.step.active .spot::before{animation:gGlow 1.8s ease-out 2.3s both}
+.step.active .spot .arch{animation:gPhoto 1.1s cubic-bezier(.2,.9,.3,1) 2.5s both}
+@keyframes gStem{from{height:0}to{height:100%}}
+@keyframes gHead{from{opacity:0;transform:scale(0) rotate(-80deg)}to{opacity:1;transform:scale(1) rotate(var(--r,0deg))}}
+@keyframes gGlow{from{opacity:0;transform:scale(.5)}to{opacity:1;transform:scale(1)}}
+@keyframes gPhoto{from{opacity:0;transform:scale(.8)}to{opacity:1;transform:none}}
+@media(prefers-reduced-motion:reduce){
+  .stem{height:100%}
+  .head{opacity:1;transform:rotate(var(--r,0deg))}
+  .spot .bloom,.spot .arch,.spot::before{opacity:1}
+}
 </style>
 </head>
 <body data-edge="1">
@@ -184,10 +216,16 @@ body[data-edge="1"] .drift{opacity:1}
     </div>
   </section>
 
-  <!-- ============ BƯỚC 2: ẢNH CẦM HOA LILY ============ -->
+  <!-- ============ BƯỚC 2: VƯỜN HOA & ẢNH CHÍNH ============ -->
   <section class="step">
     <div class="inner">
-      <div class="arch"><img src="portrait-lily.jpg" alt="Ảnh bạn cầm hoa lily bên hồ"></div>
+      <div class="scene">
+        <div class="garden" id="garden" aria-hidden="true"></div>
+        <div class="spot">
+          <svg class="lily bloom" viewBox="-100 -100 200 200" aria-hidden="true"><use href="#lily-g"/></svg>
+          <div class="arch"><img src="portrait-lily.jpg" alt="Ảnh bạn cầm hoa lily bên hồ"></div>
+        </div>
+      </div>
       <h2>Hôm nay là ngày phụ nữ Việt Nam</h2>
       <p class="lead">Anh biết em thích hoa lily, nên anh đã trồng cả một vườn trong này. Nhưng em là bông hoa đẹp nhất!</p>
     </div>
@@ -246,7 +284,7 @@ body[data-edge="1"] .drift{opacity:1}
       <div class="paper">
         <div class="letter-text" id="letterText">
           <!-- ▼▼▼ CHÈN THƯ TAY CỦA BẠN VÀO ĐÂY — mỗi đoạn là một thẻ <p> ▼▼▼ -->
-          <p>Gửi Châu Anh},</p>
+          <p>Gửi Châu Anh,</p>
           <p>Hi em yêu, dạo này mình nhiều bất ổn ha. Nhưng anh nhận ra không nơi đâu yên bình bằng được em ôm sau xe, nghe em kể chuyện và thật hạnh phúc khi vẫn được đồng hành cùng em, được em tha thứ và yêu chiều, anh hạnh phúc lắm ý. Chắc chắn tháng sau lại lên phố nhée. Anh yêu em nhiều, chúc em 20/10 thật vui vẻ, luôn xinh đẹp và giỏi giang yêu anh nhiều hơn nữa nha, dù em vẫn đang như vậy roài. Yêu emmm</p>
           <!-- ▲▲▲ HẾT PHẦN THƯ ▲▲▲ -->
         </div>
@@ -285,7 +323,6 @@ const CONFIG = {
 
   const stage = document.getElementById('stage');
   stage.innerHTML = fill(stage.innerHTML);
-  document.title = fill("Gửi {you} 20/10");
 
   /* điều hướng từng bước */
   const steps = [...stage.querySelectorAll('.step')];
@@ -381,6 +418,23 @@ const CONFIG = {
     s.style.setProperty('--d', (16 + Math.random() * 14) + 's');
     s.style.setProperty('--delay', (-Math.random() * 20) + 's');
     drift.appendChild(s);
+  }
+
+
+  /* vườn hoa ở bước 2: [x %, độ cao thân px, cỡ hoa px, độ trễ s, xoay độ, hoa nhạt?] */
+  const gardenEl = document.getElementById('garden');
+  if (gardenEl) {
+    [[7,215,44,.55,-12,0],[93,232,46,.3,14,0],[16,160,48,.15,10,1],[84,170,50,.45,-8,1],
+     [4,112,50,.35,8,0],[96,108,50,.6,-14,0],
+     [11,80,56,.1,-6,0],[24,56,50,.5,12,1],[37,84,54,.25,-10,0],[50,54,52,.65,6,1],
+     [63,86,54,.2,10,0],[76,58,50,.4,-12,1],[89,78,56,.05,6,0]
+    ].forEach(([x, h, s, d, r, soft]) => {
+      const f = document.createElement('div');
+      f.className = 'fl';
+      f.style.cssText = `--x:${x}%;--h:${h}px;--s:${s}px;--d:${d}s;--r:${r}deg`;
+      f.innerHTML = '<i class="stem"></i><svg class="lily head' + (soft ? ' soft' : '') + '" viewBox="-100 -100 200 200"><use href="#lily-g"/></svg>';
+      gardenEl.appendChild(f);
+    });
   }
 
   render();
